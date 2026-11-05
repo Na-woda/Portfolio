@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Nawoda Lakshani">
+  <rect width="64" height="64" rx="8" fill="#F8F6F0"/>
+  <rect x="2" y="2" width="60" height="60" rx="7" fill="none" stroke="#65745E" stroke-width="1.5"/>
+  <text x="32" y="42" text-anchor="middle" font-family="Georgia, serif" font-size="22" fill="#302F2A">NL</text>
+</svg>
