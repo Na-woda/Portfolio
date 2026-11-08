@@ -13,13 +13,14 @@
   "dependencies": {
     "framer-motion": "^14.7.1",
     "lucide-react": "^1.63.0",
+    "nodemailer": "^10.4.0",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1",
-    "resend": "^6.37.0"
+    "react-dom": "^19.3.1"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.19.2",
+    "@types/nodemailer": "^8.0.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",

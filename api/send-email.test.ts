@@ -1,30 +1,36 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  send: vi.fn(),
+  sendMail: vi.fn(),
+  createTransport: vi.fn(),
 }));
 
-vi.mock("resend", () => ({
-  Resend: class {
-    emails = { send: mocks.send };
+vi.mock("nodemailer", () => ({
+  default: {
+    createTransport: mocks.createTransport,
   },
 }));
 
-import sendEmail from "./send-email.js";
+import sendEmail, { _resetRateLimits } from "./send-email.js";
 
 type Request = Parameters<typeof sendEmail>[0];
 type Response = Parameters<typeof sendEmail>[1];
 
 function createRequest(
   body: unknown,
-  options: { method?: string; contentType?: string; contentLength?: string } = {},
+  options: {
+    method?: string;
+    contentType?: string;
+    contentLength?: string;
+    ip?: string;
+  } = {},
 ) {
   return {
     method: options.method ?? "POST",
     headers: {
       "content-type": options.contentType ?? "application/json",
       "content-length": options.contentLength,
-      "x-forwarded-for": "203.0.113.42",
+      "x-forwarded-for": options.ip ?? "203.0.113.42",
     },
     body,
     socket: { remoteAddress: "127.0.0.1" },
@@ -80,23 +86,39 @@ describe("POST /api/send-email", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.RESEND_API_KEY = "re_test_key";
+    _resetRateLimits();
+    process.env.GMAIL_USER = "sender@gmail.com";
+    process.env.GMAIL_APP_PASSWORD = "abcd efgh ijkl mnop";
     process.env.CONTACT_RECEIVER_EMAIL = "owner@example.com";
-    process.env.CONTACT_SENDER_EMAIL = "Portfolio <verified@example.com>";
-    mocks.send.mockResolvedValue({ data: { id: "email-id" }, error: null });
+    mocks.createTransport.mockReturnValue({
+      sendMail: mocks.sendMail,
+    });
+    mocks.sendMail.mockResolvedValue({ messageId: "test-message-id" });
   });
 
-  it("sends a validated message to the configured recipient with the visitor as reply-to", async () => {
+  it("sends a validated message to the configured recipient with the visitor as reply-to via Gmail SMTP", async () => {
     const response = await submit(validMessage);
 
     expect(response.statusCode).toBe(200);
     expect(response.body).toEqual({ message: "Message sent." });
-    expect(mocks.send).toHaveBeenCalledWith(
+
+    expect(mocks.createTransport).toHaveBeenCalledWith({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: "sender@gmail.com",
+        pass: "abcdefghijklmnop",
+      },
+    });
+
+    expect(mocks.sendMail).toHaveBeenCalledWith(
       expect.objectContaining({
-        from: "Portfolio <verified@example.com>",
+        from: '"Portfolio Contact" <sender@gmail.com>',
         to: "owner@example.com",
         replyTo: "visitor@example.com",
         subject: "New message from your portfolio",
+        text: `Name: Nawoda\nEmail: visitor@example.com\n\nHello, I would like to connect.`,
       }),
     );
   });
@@ -108,9 +130,7 @@ describe("POST /api/send-email", () => {
       message: "<script>alert(1)</script>",
     });
 
-    const [email] = mocks.send.mock.calls[0] as [
-      { html: string },
-    ];
+    const [email] = mocks.sendMail.mock.calls[0] as [{ html: string }];
     expect(email.html).toContain("&lt;img src=x onerror=alert(1)&gt;");
     expect(email.html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
     expect(email.html).not.toContain("<script>");
@@ -125,7 +145,18 @@ describe("POST /api/send-email", () => {
     const response = await submit(body);
 
     expect(response.statusCode).toBe(400);
-    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.sendMail).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [{ ...validMessage, name: "Nawoda\r\nBcc: spam@example.com" }, "newline in name"],
+    [{ ...validMessage, email: "visitor@example.com\r\nBcc: spam@example.com" }, "newline in email"],
+  ])("rejects header injection attempt with %s", async (body) => {
+    const response = await submit(body);
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body).toEqual({ error: "Invalid input characters." });
+    expect(mocks.sendMail).not.toHaveBeenCalled();
   });
 
   it("rejects non-POST requests and unsupported content types", async () => {
@@ -137,7 +168,7 @@ describe("POST /api/send-email", () => {
     expect(methodResponse.statusCode).toBe(405);
     expect(methodResponse.headers.allow).toBe("POST");
     expect(contentTypeResponse.statusCode).toBe(415);
-    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.sendMail).not.toHaveBeenCalled();
   });
 
   it("rejects oversized and malformed JSON requests", async () => {
@@ -146,47 +177,62 @@ describe("POST /api/send-email", () => {
 
     expect(oversized.statusCode).toBe(413);
     expect(malformed.statusCode).toBe(400);
-    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.sendMail).not.toHaveBeenCalled();
   });
 
   it("silently accepts a honeypot submission without sending email", async () => {
     const response = await submit({ ...validMessage, website: "spam.example" });
 
     expect(response.statusCode).toBe(200);
-    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.sendMail).not.toHaveBeenCalled();
   });
 
-  it("fails closed when email delivery configuration is invalid", async () => {
-    process.env.CONTACT_SENDER_EMAIL = "not a sender";
+  it.each([
+    ["missing GMAIL_USER", () => { delete process.env.GMAIL_USER; }],
+    ["invalid GMAIL_USER", () => { process.env.GMAIL_USER = "not-an-email"; }],
+    ["missing GMAIL_APP_PASSWORD", () => { delete process.env.GMAIL_APP_PASSWORD; }],
+    ["empty GMAIL_APP_PASSWORD", () => { process.env.GMAIL_APP_PASSWORD = "   "; }],
+    ["missing CONTACT_RECEIVER_EMAIL", () => { delete process.env.CONTACT_RECEIVER_EMAIL; }],
+    ["invalid CONTACT_RECEIVER_EMAIL", () => { process.env.CONTACT_RECEIVER_EMAIL = "not-an-email"; }],
+  ])("fails closed when email delivery configuration has %s", async (_, mutateEnv) => {
+    mutateEnv();
     vi.spyOn(console, "error").mockImplementation(() => undefined);
 
     const response = await submit(validMessage);
 
     expect(response.statusCode).toBe(503);
-    expect(mocks.send).not.toHaveBeenCalled();
+    expect(response.body).toEqual({ error: "Contact service is not configured." });
+    expect(mocks.sendMail).not.toHaveBeenCalled();
   });
 
-  it("returns a generic server error when Resend rejects the message", async () => {
-    mocks.send.mockResolvedValueOnce({
-      data: null,
-      error: { name: "validation_error", message: "private provider detail" },
-    });
+  it("returns a generic server error when Nodemailer fails to send", async () => {
+    mocks.sendMail.mockRejectedValueOnce(new Error("SMTP connection failed: sensitive host info"));
     vi.spyOn(console, "error").mockImplementation(() => undefined);
 
     const response = await submit(validMessage);
 
     expect(response.statusCode).toBe(502);
     expect(response.body).toEqual({ error: "Your message could not be sent." });
-    expect(JSON.stringify(response.body)).not.toContain("private provider detail");
+    expect(JSON.stringify(response.body)).not.toContain("sensitive host info");
   });
 
-  it("returns a generic server error when the Resend request fails", async () => {
-    mocks.send.mockRejectedValueOnce(new Error("network details"));
-    vi.spyOn(console, "error").mockImplementation(() => undefined);
+  it("enforces rate limiting per IP address", async () => {
+    const clientOptions = { ip: "198.51.100.10" };
 
-    const response = await submit(validMessage);
+    for (let i = 0; i < 5; i++) {
+      const res = await submit(validMessage, clientOptions);
+      expect(res.statusCode).toBe(200);
+    }
 
-    expect(response.statusCode).toBe(502);
-    expect(JSON.stringify(response.body)).not.toContain("network details");
+    const rateLimitedResponse = await submit(validMessage, clientOptions);
+    expect(rateLimitedResponse.statusCode).toBe(429);
+    expect(rateLimitedResponse.body).toEqual({
+      error: "Too many requests. Please try again later.",
+    });
+    expect(rateLimitedResponse.headers["retry-after"]).toBeDefined();
+
+    // Requests from a different IP should still succeed
+    const otherIpResponse = await submit(validMessage, { ip: "198.51.100.11" });
+    expect(otherIpResponse.statusCode).toBe(200);
   });
 });

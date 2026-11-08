@@ -156,7 +156,7 @@ export function Hero() {
           </motion.div>
         </motion.div>
 
-        <aside className="mx-auto w-full max-w-sm md:justify-self-end">
+        <aside className="mx-auto w-full max-w-[260px] md:justify-self-end">
           <div className="overflow-hidden border border-line bg-card p-1.5">
             <motion.img
               src="/LinkedIn%20DP.png"

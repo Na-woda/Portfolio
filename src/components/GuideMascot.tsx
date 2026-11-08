@@ -16,7 +16,7 @@ const messages = {
   home: "Hi! 👋 Scroll down and I'll show you around.",
   about: "Here's a little about me.",
   explore: "Let's explore some of my projects!",
-  contactLink: "Want to get in touch? Here's hoe to reach me.",
+  contactLink: "Want to get in touch? Here's how to reach me.",
   cv: "Want to know more about my experience? Take a look at my CV!",
   github: "Want to see how it was built? Visit the GitHub project.",
   linkedin: "Let's connect on LinkedIn.",
