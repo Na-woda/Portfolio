@@ -1,18 +1,25 @@
 import { education, profile } from "../data/portfolio";
+import { Reveal } from "./Reveal";
 
 export function About() {
   return (
-    <section id="about" className="border-t border-line bg-cream-2">
+    <section id="about" className="scroll-mt-24 border-t border-line bg-cream-2">
       <div className="mx-auto grid max-w-6xl gap-12 px-5 py-20 md:grid-cols-[0.4fr_1fr] md:px-8 md:py-24">
-        <div>
+        <Reveal>
           <p className="text-xs uppercase tracking-[0.28em] text-sage-deep">
             01 / About
           </p>
           <h2 className="mt-3 font-serif text-4xl tracking-tight text-ink">
+            <span
+              data-guide-target="about-story"
+              data-guide-kind="about"
+              data-guide-label="About Nawoda"
+            >
             A student who learns by building
+            </span>
           </h2>
-        </div>
-        <div className="max-w-2xl space-y-5 text-base leading-relaxed text-muted">
+        </Reveal>
+        <Reveal className="max-w-2xl space-y-5 text-base leading-relaxed text-muted">
           <p>
             I am {profile.legalName}, a software engineering undergraduate at
             The Open University of Sri Lanka. Most of what I know about
@@ -22,7 +29,7 @@ export function About() {
           </p>
           <p>
             I care about interfaces that stay readable, APIs that are explicit,
-            and the unglamorous details—auth, uploads, calendars, OCR parsing—
+            and the unglamorous details-auth, uploads, calendars, OCR parsing-
             that decide whether an idea is usable. I would rather finish a
             careful slice of a system than decorate a prototype that cannot run.
           </p>
@@ -46,7 +53,7 @@ export function About() {
               </article>
             ))}
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

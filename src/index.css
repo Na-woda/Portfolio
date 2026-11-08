@@ -1,20 +1,49 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cream: #f8f6f0;
-  --color-cream-2: #f0eee5;
-  --color-card: #fffdf8;
-  --color-sage: #a3ad98;
-  --color-sage-deep: #65745e;
-  --color-ink: #302f2a;
-  --color-muted: #74736a;
-  --color-line: #e3e0d6;
-  --font-serif: "Fraunces", "Iowan Old Style", "Palatino Linotype", serif;
-  --font-sans: "Outfit", "Segoe UI", sans-serif;
+  --color-cream: var(--page-bg);
+  --color-cream-2: var(--surface-muted);
+  --color-card: var(--surface-card);
+  --color-sage: var(--accent-soft);
+  --color-sage-deep: var(--accent-text);
+  --color-ink: var(--text-primary);
+  --color-muted: var(--text-secondary);
+  --color-line: var(--border-subtle);
+  --font-serif: "Manrope", "Segoe UI", sans-serif;
+  --font-sans: "Inter", "Segoe UI", sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+  --page-bg: #081426;
+  --surface-muted: #0d1b30;
+  --surface-card: #11223a;
+  --accent-primary: #2563eb;
+  --accent-soft: #60a5fa;
+  --accent-text: #60a5fa;
+  --text-primary: #f8fafc;
+  --text-secondary: #a7b4c8;
+  --border-subtle: #223650;
+  --focus-ring: #60a5fa;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --page-bg: #f8fafc;
+  --surface-muted: #ffffff;
+  --surface-card: #ffffff;
+  --accent-primary: #2563eb;
+  --accent-soft: #3b82f6;
+  --accent-text: #2563eb;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --border-subtle: #e2e8f0;
+  --focus-ring: #2563eb;
 }
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -34,21 +63,45 @@ html {
 
 body {
   margin: 0;
-  background: var(--color-cream);
-  color: var(--color-ink);
+  background: var(--page-bg);
+  color: var(--text-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--color-sage) 45%, white);
-  color: var(--color-ink);
+  background: color-mix(in srgb, var(--accent-soft) 45%, transparent);
+  color: var(--text-primary);
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-sage-deep);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
+}
+
+a,
+button,
+input,
+textarea,
+article,
+header,
+footer,
+section {
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.button-primary {
+  background: var(--accent-primary);
+  color: #ffffff;
+}
+
+.button-primary:hover {
+  background: #1d4ed8;
 }
 
 .skip-link {
@@ -56,11 +109,22 @@ body {
   left: 1rem;
   top: -3rem;
   z-index: 80;
-  background: var(--color-ink);
-  color: var(--color-cream);
+  background: var(--text-primary);
+  color: var(--page-bg);
   padding: 0.5rem 0.9rem;
 }
 
 .skip-link:focus {
   top: 1rem;
+}
+
+.guide-target-active {
+  outline: 1px solid var(--accent-text);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-soft) 18%, transparent);
+}
+
+input,
+textarea {
+  color-scheme: inherit;
 }

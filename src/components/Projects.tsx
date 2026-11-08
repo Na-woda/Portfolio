@@ -1,30 +1,55 @@
 import { ArrowUpRight } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import type { Variants } from "framer-motion";
+import { durations, easing, fadeUp, imageZoom, staggerContainer } from "../animations/motion";
 import { projects, type Project } from "../data/portfolio";
+import { Reveal } from "./Reveal";
+
+const projectCardVariants: Variants = {
+  ...fadeUp,
+  rest: { opacity: 1, y: 0 },
+  hover: {
+    y: -6,
+    transition: { duration: durations.fast, ease: easing },
+  },
+};
 
 function ProjectLinks({ project }: { project: Project }) {
   return (
     <div className="mt-6 flex flex-wrap gap-3">
       {project.github ? (
-        <a
+        <motion.a
           href={project.github.href}
+          data-guide-target={`project-github-${project.id}`}
+          data-guide-kind="project-github"
+          data-guide-label={project.title}
           target="_blank"
           rel="noreferrer"
+          whileHover={{ y: -1 }}
           className="inline-flex items-center gap-1 border border-line bg-card px-4 py-2 text-sm text-ink hover:border-sage-deep"
         >
           {project.github.label}
-          <ArrowUpRight size={14} aria-hidden />
-        </a>
+          <motion.span whileHover={{ x: 3, y: -3 }} aria-hidden="true">
+            <ArrowUpRight size={14} />
+          </motion.span>
+        </motion.a>
       ) : null}
       {project.live ? (
-        <a
+        <motion.a
           href={project.live.href}
+          data-guide-target={`project-live-${project.id}`}
+          data-guide-kind="project-live"
+          data-guide-label={project.title}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-1 bg-sage-deep px-4 py-2 text-sm text-cream hover:bg-ink"
+          whileHover={{ y: -1 }}
+          className="button-primary inline-flex min-h-10 items-center gap-1 px-4 py-2 text-sm font-medium"
         >
           {project.live.label}
-          <ArrowUpRight size={14} aria-hidden />
-        </a>
+          <motion.span whileHover={{ x: 3, y: -3 }} aria-hidden="true">
+            <ArrowUpRight size={14} />
+          </motion.span>
+        </motion.a>
       ) : null}
     </div>
   );
@@ -32,15 +57,13 @@ function ProjectLinks({ project }: { project: Project }) {
 
 function TechList({ items }: { items: string[] }) {
   return (
-    <ul className="mt-5 flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted">
-      {items.map((tech, index) => (
-        <li key={tech} className="inline-flex items-center gap-3">
-          {index > 0 ? (
-            <span className="text-sage" aria-hidden>
-              /
-            </span>
-          ) : null}
-          <span>{tech}</span>
+    <ul className="mt-5 flex flex-wrap gap-2">
+      {items.map((tech) => (
+        <li
+          key={tech}
+          className="border border-line bg-cream px-2.5 py-1 text-xs text-muted"
+        >
+          {tech}
         </li>
       ))}
     </ul>
@@ -50,42 +73,49 @@ function TechList({ items }: { items: string[] }) {
 function ProjectBody({ project }: { project: Project }) {
   return (
     <>
-      <p className="text-xs uppercase tracking-[0.24em] text-sage-deep">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sage-deep">
         {project.number} / {project.subtitle}
       </p>
-      <h3 className="mt-3 font-serif text-3xl tracking-tight text-ink md:text-4xl">
+      <h3 className="mt-3 font-serif text-2xl font-semibold tracking-tight text-ink md:text-3xl">
         {project.title}
       </h3>
-      <p className="mt-4 text-base leading-relaxed text-muted">{project.summary}</p>
-      <p className="mt-4 text-base leading-relaxed text-ink">{project.problem}</p>
-      <p className="mt-4 text-base leading-relaxed text-muted">
-        {project.contribution}
-      </p>
-      <ul className="mt-5 space-y-2 text-sm leading-relaxed text-ink">
-        {project.features.map((feature) => (
-          <li key={feature} className="flex gap-3">
-            <span className="mt-2 h-1.5 w-1.5 shrink-0 bg-sage-deep" aria-hidden />
-            <span>{feature}</span>
-          </li>
-        ))}
-      </ul>
+      <p className="mt-3 text-sm leading-6 text-muted">{project.summary}</p>
       <TechList items={project.technologies} />
-      {project.notes ? (
-        <p className="mt-4 text-sm leading-relaxed text-muted">{project.notes}</p>
-      ) : null}
+      <details className="group mt-5 border-t border-line pt-4">
+        <summary className="cursor-pointer list-none text-sm font-medium text-sage-deep marker:hidden focus-visible:outline">
+          <span className="group-open:hidden">More about the project +</span>
+          <span className="hidden group-open:inline">Less about the project −</span>
+        </summary>
+        <div className="mt-4 space-y-4">
+          <p className="text-sm leading-6 text-ink">{project.problem}</p>
+          <p className="text-sm leading-6 text-muted">{project.contribution}</p>
+          <ul className="space-y-2 text-sm leading-relaxed text-ink">
+            {project.features.map((feature) => (
+              <li key={feature} className="flex gap-3">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 bg-sage-deep" aria-hidden />
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
+          {project.notes ? (
+            <p className="text-sm leading-relaxed text-muted">{project.notes}</p>
+          ) : null}
+        </div>
+      </details>
       <ProjectLinks project={project} />
     </>
   );
 }
 
 export function Projects() {
+  const reduceMotion = useReducedMotion();
   const featured = projects.find((project) => project.layout === "featured");
   const rest = projects.filter((project) => project.layout !== "featured");
 
   return (
-    <section id="projects" className="border-t border-line">
+    <section id="projects" className="scroll-mt-24 border-t border-line">
       <div className="mx-auto max-w-6xl px-5 py-20 md:px-8 md:py-24">
-        <div className="max-w-2xl">
+        <Reveal className="max-w-2xl">
           <p className="text-xs uppercase tracking-[0.28em] text-sage-deep">
             02 / Projects
           </p>
@@ -97,16 +127,34 @@ export function Projects() {
             described from the repositories, local source, and my CV. I have not
             included live demos or GitHub links unless they exist.
           </p>
-        </div>
+        </Reveal>
 
         {featured ? (
-          <article className="mt-14 overflow-hidden border border-line bg-card">
+          <motion.article
+            data-guide-target={`project-card-${featured.id}`}
+            data-guide-kind="project-card"
+            data-guide-label={featured.title}
+            variants={projectCardVariants}
+            initial={reduceMotion ? false : "hidden"}
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            whileHover={reduceMotion ? undefined : "hover"}
+            transition={{ duration: durations.fast, ease: easing }}
+            className="mt-12 overflow-hidden border border-line bg-card hover:shadow-lg"
+          >
             {featured.image ? (
-              <figure className="border-b border-line">
-                <img
+              <figure className="overflow-hidden border-b border-line">
+                <motion.img
+                  variants={imageZoom}
                   src={featured.image.src}
                   alt={featured.image.alt}
-                  className="h-[22rem] w-full object-cover object-center sm:h-[28rem]"
+                  loading="lazy"
+                  decoding="async"
+                  className={`aspect-[16/7] w-full ${
+                    featured.image.fit === "contain"
+                      ? "object-contain"
+                      : "object-cover object-center"
+                  }`}
                 />
               </figure>
             ) : null}
@@ -120,14 +168,27 @@ export function Projects() {
                 <ProjectBody project={featured} />
               </div>
             </div>
-          </article>
+          </motion.article>
         ) : null}
 
-        <div className="mt-8 space-y-8">
+        <motion.div
+          variants={reduceMotion ? undefined : staggerContainer}
+          initial={reduceMotion ? false : "hidden"}
+          whileInView={reduceMotion ? undefined : "visible"}
+          viewport={{ once: true, amount: 0.2 }}
+          className="mt-8 space-y-6"
+        >
           {rest.map((project, index) => (
-            <article
+            <motion.article
               key={project.id}
-              className="grid gap-8 border-t border-line pt-10 md:grid-cols-2 md:gap-14"
+              data-guide-target={`project-card-${project.id}`}
+              data-guide-kind="project-card"
+              data-guide-label={project.title}
+              variants={projectCardVariants}
+              initial={reduceMotion ? false : undefined}
+              whileHover={reduceMotion ? undefined : "hover"}
+              transition={{ duration: durations.fast, ease: easing }}
+              className="grid gap-7 border border-line bg-card p-5 hover:shadow-lg sm:p-7 md:grid-cols-2 md:items-center md:gap-10 md:p-8"
             >
               <div className={index % 2 === 1 ? "md:order-2" : undefined}>
                 <ProjectBody project={project} />
@@ -138,25 +199,21 @@ export function Projects() {
                 }`}
               >
                 {project.image ? (
-                  <img
+                  <motion.img
+                    variants={imageZoom}
                     src={project.image.src}
                     alt={project.image.alt}
-                    className="h-56 w-full object-cover sm:h-72"
+                    loading="lazy"
+                    decoding="async"
+                    className={`aspect-[4/3] w-full ${
+                      project.image.fit === "contain" ? "object-contain" : "object-cover"
+                    }`}
                   />
                 ) : null}
-                <div className="flex min-h-40 flex-col justify-between p-6 md:p-8">
-                  <p className="font-serif text-6xl text-sage">{project.number}</p>
-                  <div>
-                    <p className="font-serif text-2xl text-ink">{project.title}</p>
-                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted">
-                      {project.subtitle}
-                    </p>
-                  </div>
-                </div>
               </div>
-            </article>
+            </motion.article>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

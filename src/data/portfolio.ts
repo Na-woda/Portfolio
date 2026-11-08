@@ -40,6 +40,7 @@ export type Project = {
   image?: {
     src: string;
     alt: string;
+    fit?: "cover" | "contain";
   };
   github?: ProjectLink;
   live?: ProjectLink;
@@ -71,7 +72,6 @@ export const navItems: NavItem[] = [
 export const socialLinks: SocialLink[] = [
   { label: "LinkedIn", href: profile.linkedin },
   { label: "GitHub", href: profile.github },
-  { label: "Email", href: `mailto:${profile.email}` },
 ];
 
 export const education: EducationEntry[] = [
@@ -137,6 +137,11 @@ export const projects: Project[] = [
       "JWT",
       "Cloudinary",
     ],
+    image: {
+      src: "/projects/WishDora.png",
+      alt: "WishDora landing page with its Make A Wish Now call to action",
+      fit: "contain",
+    },
     github: {
       label: "GitHub repository",
       href: "https://github.com/Na-woda/WishDora",
@@ -145,7 +150,7 @@ export const projects: Project[] = [
       label: "Live site",
       href: "https://wish-dora.vercel.app",
     },
-    layout: "featured",
+    layout: "split-right",
   },
   {
     id: "price-detector",
@@ -174,6 +179,11 @@ export const projects: Project[] = [
     ],
     notes:
       "My CV also describes Sinhala-locale voice commands, real-time product lookup, and a fallback OCR path. The public GitHub snapshot currently centres on camera capture, Vision OCR, LKR parsing, cart, and budget alerts.",
+    image: {
+      src: "/projects/Smart-shopping.jpeg",
+      alt: "Smart Shopping Price Detector mobile app scanning a product price and tracking a budget",
+      fit: "contain",
+    },
     github: {
       label: "GitHub repository",
       href: "https://github.com/Na-woda/OCR",

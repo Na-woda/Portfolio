@@ -1,100 +1,200 @@
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
+import {
+  motion,
+  useReducedMotion,
+} from "framer-motion";
+import {
+  arrowNudge,
+  fadeDown,
+  fadeUp,
+  heroWord,
+  lineDraw,
+  scaleIn,
+  staggerContainer,
+} from "../animations/motion";
 import { profile } from "../data/portfolio";
 
 export function Hero() {
   const reduceMotion = useReducedMotion();
+  const nameParts = profile.name.split(" ");
 
   return (
-    <section id="home" className="relative overflow-hidden">
-      <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)] md:px-8 md:py-24 lg:py-28">
+    <section id="home" className="relative scroll-mt-24 overflow-hidden">
+      <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 sm:py-20 md:grid-cols-[minmax(0,1.35fr)_minmax(16rem,0.65fr)] md:items-center md:px-8 md:py-24">
         <motion.div
-          initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          variants={reduceMotion ? undefined : staggerContainer}
+          initial={reduceMotion ? false : "hidden"}
+          animate="visible"
         >
-          <p className="mb-5 text-xs font-medium uppercase tracking-[0.28em] text-sage-deep">
+          <motion.p
+            variants={fadeDown}
+            className="mb-5 text-xs font-semibold uppercase tracking-[0.18em] text-sage-deep"
+          >
             {profile.role}
-          </p>
-          <h1 className="max-w-[12ch] font-serif text-5xl leading-[1.05] tracking-tight text-ink sm:text-6xl lg:text-7xl">
-            {profile.name}
-          </h1>
-          <p className="mt-7 max-w-xl text-lg leading-relaxed text-muted">
+          </motion.p>
+          <motion.h1
+            variants={reduceMotion ? undefined : staggerContainer}
+            aria-label={profile.name}
+            className="max-w-[12ch] font-serif text-5xl leading-[1.08] tracking-[-0.045em] text-ink sm:text-6xl"
+          >
+            {nameParts.map((part, index) => (
+              <span
+                key={`${part}-${index}`}
+                className={`inline-block overflow-hidden align-bottom ${
+                  index < nameParts.length - 1 ? "mr-3" : ""
+                }`}
+                aria-hidden="true"
+              >
+                <motion.span variants={heroWord} className="inline-block">
+                  {part}
+                </motion.span>
+              </span>
+            ))}
+          </motion.h1>
+          <motion.p
+            variants={fadeUp}
+            className="mt-7 max-w-xl text-base leading-7 text-muted sm:text-lg sm:leading-8"
+          >
             I study software engineering at The Open University of Sri Lanka and
             build web and mobile applications with React, Node.js, Express,
             MongoDB, and React Native. I am looking for a software engineering
             internship where I can contribute to reliable, user-focused software.
-          </p>
-          <div className="mt-9 flex flex-wrap items-center gap-3">
-            <a
+          </motion.p>
+          <motion.div
+            variants={reduceMotion ? undefined : staggerContainer}
+            className="mt-9 flex flex-wrap items-center gap-3"
+          >
+            <motion.a
+              variants={fadeUp}
               href="#projects"
-              className="inline-flex items-center gap-2 bg-sage-deep px-5 py-3 text-sm text-cream transition-colors hover:bg-ink"
+              data-guide-target="home-explore"
+              data-guide-kind="explore"
+              whileHover={reduceMotion ? undefined : { y: -2 }}
+              className="button-primary inline-flex min-h-12 items-center gap-2 px-5 py-3 text-sm font-medium transition-colors"
             >
               Explore my projects
-              <ArrowDownRight size={16} aria-hidden />
-            </a>
-            <a
+              <motion.span
+                variants={arrowNudge}
+                initial="rest"
+                whileHover="hover"
+                aria-hidden="true"
+              >
+                <ArrowDownRight size={16} />
+              </motion.span>
+            </motion.a>
+            <motion.a
+              variants={fadeUp}
               href="#contact"
-              className="inline-flex items-center gap-2 border border-line bg-card px-5 py-3 text-sm text-ink transition-colors hover:border-sage-deep"
+              data-guide-target="home-contact"
+              data-guide-kind="contact"
+              whileHover={reduceMotion ? undefined : { y: -2 }}
+              className="inline-flex min-h-12 items-center gap-2 border border-line bg-card px-5 py-3 text-sm font-medium text-ink transition-colors hover:border-sage-deep"
             >
               Contact me
-            </a>
-          </div>
-          <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm">
-            <a
+            </motion.a>
+          </motion.div>
+          <motion.div
+            variants={reduceMotion ? undefined : staggerContainer}
+            className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm"
+          >
+            <motion.a
+              variants={fadeUp}
               href={profile.github}
+              data-guide-target="home-github"
+              data-guide-kind="github"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 text-muted hover:text-ink"
+              className="inline-flex items-center gap-1 text-muted underline decoration-line underline-offset-4 hover:text-sage-deep"
             >
               GitHub
-              <ArrowUpRight size={14} aria-hidden />
-            </a>
-            <a
+              <motion.span
+                variants={arrowNudge}
+                initial="rest"
+                whileHover="hover"
+                aria-hidden="true"
+              >
+                <ArrowUpRight size={14} />
+              </motion.span>
+            </motion.a>
+            <motion.a
+              variants={fadeUp}
               href={profile.linkedin}
+              data-guide-target="home-linkedin"
+              data-guide-kind="linkedin"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 text-muted hover:text-ink"
+              className="inline-flex items-center gap-1 text-muted underline decoration-line underline-offset-4 hover:text-sage-deep"
             >
               LinkedIn
-              <ArrowUpRight size={14} aria-hidden />
-            </a>
-            <a
+              <motion.span
+                variants={arrowNudge}
+                initial="rest"
+                whileHover="hover"
+                aria-hidden="true"
+              >
+                <ArrowUpRight size={14} />
+              </motion.span>
+            </motion.a>
+            <motion.a
+              variants={fadeUp}
               href={profile.resumeHref}
-              className="inline-flex items-center gap-1 text-muted hover:text-ink"
+              download
+              data-guide-target="home-cv"
+              data-guide-kind="cv"
+              className="inline-flex items-center gap-1 text-muted underline decoration-line underline-offset-4 hover:text-sage-deep"
             >
               Download CV
-              <ArrowUpRight size={14} aria-hidden />
-            </a>
-          </div>
+              <motion.span
+                variants={arrowNudge}
+                initial="rest"
+                whileHover="hover"
+                aria-hidden="true"
+              >
+                <ArrowUpRight size={14} />
+              </motion.span>
+            </motion.a>
+          </motion.div>
         </motion.div>
 
-        <aside className="self-end">
-          <img
-            src="/LinkedIn%20DP.png"
-            alt="Nawoda Lakshani"
-            className="aspect-square w-full rounded-full border border-sage object-cover object-[center_32%]"
-          />
-          <dl className="mt-8 space-y-5 border-l border-sage pl-6 md:pl-8">
+        <aside className="mx-auto w-full max-w-sm md:justify-self-end">
+          <div className="overflow-hidden border border-line bg-card p-1.5">
+            <motion.img
+              src="/LinkedIn%20DP.png"
+              alt="Nawoda Lakshani"
+              variants={scaleIn}
+              initial={reduceMotion ? false : "hidden"}
+              animate="visible"
+              className="aspect-[4/4.5] w-full object-cover object-[center_32%]"
+            />
+          </div>
+          <dl className="relative mt-7 space-y-4 pl-5">
+            <motion.span
+              aria-hidden="true"
+              className="absolute inset-y-0 left-0 w-px origin-top bg-sage-deep"
+              variants={lineDraw}
+              initial={reduceMotion ? false : "hidden"}
+              whileInView={reduceMotion ? undefined : "visible"}
+              viewport={{ once: true, amount: 0.2 }}
+            />
             <div>
-              <dt className="text-xs uppercase tracking-[0.2em] text-sage-deep">
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sage-deep">
                 Currently
               </dt>
-              <dd className="mt-2 text-base leading-relaxed text-ink">
+              <dd className="mt-1.5 text-sm leading-relaxed text-ink">
                 BSc (Hons) in Software Engineering, 2023 — present
               </dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-[0.2em] text-sage-deep">
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sage-deep">
                 Based
               </dt>
-              <dd className="mt-2 text-base text-ink">{profile.location}</dd>
+              <dd className="mt-1.5 text-sm text-ink">{profile.location}</dd>
             </div>
             <div>
-              <dt className="text-xs uppercase tracking-[0.2em] text-sage-deep">
+              <dt className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sage-deep">
                 Focus
               </dt>
-              <dd className="mt-2 text-base leading-relaxed text-ink">
+              <dd className="mt-1.5 text-sm leading-relaxed text-ink">
                 Full-stack web and mobile applications
               </dd>
             </div>

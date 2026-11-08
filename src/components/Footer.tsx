@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { profile, socialLinks } from "../data/portfolio";
 
 export function Footer() {
@@ -12,19 +13,24 @@ export function Footer() {
         </div>
         <div className="flex flex-wrap items-center gap-5 text-sm">
           {socialLinks.map((link) => (
-            <a
+            <motion.a
               key={link.label}
               href={link.href}
               target={link.href.startsWith("http") ? "_blank" : undefined}
               rel={link.href.startsWith("http") ? "noreferrer" : undefined}
+              whileHover={{ y: -2 }}
               className="text-muted hover:text-ink"
             >
               {link.label}
-            </a>
+            </motion.a>
           ))}
-          <a href="#home" className="text-sage-deep hover:text-ink">
+          <motion.a
+            href="#home"
+            whileHover={{ y: -2 }}
+            className="text-sage-deep hover:text-ink"
+          >
             Back to top
-          </a>
+          </motion.a>
         </div>
       </div>
     </footer>
