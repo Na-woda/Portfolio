@@ -148,7 +148,7 @@ export const projects: Project[] = [
     },
     live: {
       label: "Live site",
-      href: "https://wish-dora.vercel.app",
+      href: "https://wishdora.netlify.app/",
     },
     layout: "split-right",
   },
