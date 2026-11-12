@@ -186,7 +186,7 @@ export const projects: Project[] = [
     },
     github: {
       label: "GitHub repository",
-      href: "https://github.com/Na-woda/OCR",
+      href: "https://github.com/rashhyyy/Smart_Shopping_MobileApp",
     },
     layout: "split-right",
   },
